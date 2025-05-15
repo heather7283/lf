@@ -10,6 +10,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 	"unicode"
 	"unicode/utf8"
@@ -808,6 +809,16 @@ func normal(app *app) {
 	app.ui.cmdPrefix = ""
 }
 
+func kill_old_preview_process() {
+    if last_preview_child_pid > 0 {
+        err := syscall.Kill(-last_preview_child_pid, syscall.SIGTERM)
+        if err != nil {
+            log.Printf("failed to kill pgid %d: %s", last_preview_child_pid, err.Error())
+        }
+        last_preview_child_pid = 0
+    }
+}
+
 func insert(app *app, arg string) {
 	switch {
 	case gOpts.incsearch && (app.ui.cmdPrefix == "/" || app.ui.cmdPrefix == "?"):
@@ -1052,34 +1063,42 @@ func (e *callExpr) eval(app *app, _ []string) {
 		app.quitChan <- struct{}{}
 	case "up":
 		if app.nav.up(e.count) {
+			kill_old_preview_process()
 			app.ui.loadFile(app, true)
 		}
 	case "half-up":
 		if app.nav.up(e.count * app.nav.height / 2) {
+			kill_old_preview_process()
 			app.ui.loadFile(app, true)
 		}
 	case "page-up":
 		if app.nav.up(e.count * app.nav.height) {
+			kill_old_preview_process()
 			app.ui.loadFile(app, true)
 		}
 	case "scroll-up":
 		if app.nav.scrollUp(e.count) {
+			kill_old_preview_process()
 			app.ui.loadFile(app, true)
 		}
 	case "down":
 		if app.nav.down(e.count) {
+			kill_old_preview_process()
 			app.ui.loadFile(app, true)
 		}
 	case "half-down":
 		if app.nav.down(e.count * app.nav.height / 2) {
+			kill_old_preview_process()
 			app.ui.loadFile(app, true)
 		}
 	case "page-down":
 		if app.nav.down(e.count * app.nav.height) {
+			kill_old_preview_process()
 			app.ui.loadFile(app, true)
 		}
 	case "scroll-down":
 		if app.nav.scrollDown(e.count) {
+			kill_old_preview_process()
 			app.ui.loadFile(app, true)
 		}
 	case "updir":
@@ -1091,6 +1110,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 				return
 			}
 		}
+		kill_old_preview_process()
 		app.ui.loadFile(app, true)
 		restartIncCmd(app)
 		onChdir(app)
@@ -1108,6 +1128,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 				app.ui.echoerrf("opening directory: %s", err)
 				return
 			}
+			kill_old_preview_process()
 			app.ui.loadFile(app, true)
 			restartIncCmd(app)
 			onChdir(app)
@@ -1128,6 +1149,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 		for range e.count {
 			app.nav.cdJumpListNext()
 		}
+		kill_old_preview_process()
 		app.ui.loadFile(app, true)
 		restartIncCmd(app)
 		onChdir(app)
@@ -1137,6 +1159,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 		for range e.count {
 			app.nav.cdJumpListPrev()
 		}
+		kill_old_preview_process()
 		app.ui.loadFile(app, true)
 		restartIncCmd(app)
 		onChdir(app)
@@ -1148,6 +1171,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 			moved = app.nav.move(e.count - 1)
 		}
 		if moved {
+			kill_old_preview_process()
 			app.ui.loadFile(app, true)
 		}
 	case "bottom":
@@ -1160,18 +1184,22 @@ func (e *callExpr) eval(app *app, _ []string) {
 			moved = app.nav.move(e.count - 1)
 		}
 		if moved {
+			kill_old_preview_process()
 			app.ui.loadFile(app, true)
 		}
 	case "high":
 		if app.nav.high() {
+			kill_old_preview_process()
 			app.ui.loadFile(app, true)
 		}
 	case "middle":
 		if app.nav.middle() {
+			kill_old_preview_process()
 			app.ui.loadFile(app, true)
 		}
 	case "low":
 		if app.nav.low() {
+			kill_old_preview_process()
 			app.ui.loadFile(app, true)
 		}
 	case "toggle":

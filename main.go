@@ -19,6 +19,9 @@ import (
 	"golang.org/x/term"
 )
 
+// DIRTY HACK
+var last_preview_child_pid int
+
 //go:embed doc.txt
 var genDocString string
 

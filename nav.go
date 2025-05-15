@@ -16,6 +16,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/djherbis/times"
@@ -889,6 +890,10 @@ func (nav *nav) preview(path string, win *win, mode string) {
 			strconv.Itoa(win.y),
 			mode,
 		)
+		cmd.SysProcAttr = &syscall.SysProcAttr{
+			Setpgid: true,
+			Pgid: 0,
+		}
 		var stderr bytes.Buffer
 		cmd.Stderr = &stderr
 
@@ -903,6 +908,7 @@ func (nav *nav) preview(path string, win *win, mode string) {
 			out.Close()
 			return
 		}
+		last_preview_child_pid = cmd.Process.Pid
 
 		defer func() {
 			if err := cmd.Wait(); err != nil {
@@ -917,6 +923,7 @@ func (nav *nav) preview(path string, win *win, mode string) {
 				s = strings.Join(strings.Fields(s), " ")
 				log.Printf("loading file (stderr): %s", s)
 			}
+			last_preview_child_pid = 0
 		}()
 		defer out.Close()
 		reader = bufio.NewReader(out)
