@@ -10,6 +10,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 	"unicode"
 	"unicode/utf8"
@@ -794,6 +795,16 @@ func normal(app *app) {
 	app.ui.cmdPrefix = ""
 }
 
+func kill_old_preview_process() {
+    if last_preview_child_pid > 0 {
+        err := syscall.Kill(-last_preview_child_pid, syscall.SIGTERM)
+        if err != nil {
+            log.Printf("failed to kill pgid %d: %s", last_preview_child_pid, err.Error())
+        }
+        last_preview_child_pid = 0
+    }
+}
+
 func insert(app *app, arg string) {
 	switch {
 	case gOpts.incsearch && (app.ui.cmdPrefix == "/" || app.ui.cmdPrefix == "?"):
@@ -1012,6 +1023,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		if app.nav.up(e.count) {
+			kill_old_preview_process()
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
@@ -1020,6 +1032,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		if app.nav.up(e.count * app.nav.height / 2) {
+			kill_old_preview_process()
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
@@ -1028,6 +1041,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		if app.nav.up(e.count * app.nav.height) {
+			kill_old_preview_process()
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
@@ -1036,6 +1050,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		if app.nav.scrollUp(e.count) {
+			kill_old_preview_process()
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
@@ -1044,6 +1059,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		if app.nav.down(e.count) {
+			kill_old_preview_process()
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
@@ -1052,6 +1068,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		if app.nav.down(e.count * app.nav.height / 2) {
+			kill_old_preview_process()
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
@@ -1060,6 +1077,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		if app.nav.down(e.count * app.nav.height) {
+			kill_old_preview_process()
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
@@ -1081,6 +1099,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		if app.nav.scrollDown(e.count) {
+			kill_old_preview_process()
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
@@ -1096,6 +1115,7 @@ func (e *callExpr) eval(app *app, args []string) {
 				return
 			}
 		}
+		kill_old_preview_process()
 		app.ui.loadFile(app, true)
 		app.ui.loadFileInfo(app.nav)
 		restartIncCmd(app)
@@ -1118,6 +1138,7 @@ func (e *callExpr) eval(app *app, args []string) {
 				app.ui.echoerrf("opening directory: %s", err)
 				return
 			}
+			kill_old_preview_process()
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 			restartIncCmd(app)
@@ -1142,6 +1163,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		for range e.count {
 			app.nav.cdJumpListPrev()
 		}
+		kill_old_preview_process()
 		app.ui.loadFile(app, true)
 		app.ui.loadFileInfo(app.nav)
 		restartIncCmd(app)
@@ -1152,6 +1174,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		for range e.count {
 			app.nav.cdJumpListNext()
 		}
+		kill_old_preview_process()
 		app.ui.loadFile(app, true)
 		app.ui.loadFileInfo(app.nav)
 		restartIncCmd(app)
@@ -1169,6 +1192,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			moved = app.nav.move(e.count - 1)
 		}
 		if moved {
+			kill_old_preview_process()
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
@@ -1185,6 +1209,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			moved = app.nav.move(e.count - 1)
 		}
 		if moved {
+			kill_old_preview_process()
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
@@ -1193,6 +1218,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		if app.nav.high() {
+			kill_old_preview_process()
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
@@ -1201,6 +1227,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		if app.nav.middle() {
+			kill_old_preview_process()
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
@@ -1209,6 +1236,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		if app.nav.low() {
+			kill_old_preview_process()
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
