@@ -14,6 +14,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/djherbis/times"
@@ -765,6 +766,10 @@ func (nav *nav) preview(path string, win *win) {
 			strconv.Itoa(win.h),
 			strconv.Itoa(win.x),
 			strconv.Itoa(win.y))
+			cmd.SysProcAttr = &syscall.SysProcAttr{
+				Setpgid: true,
+				Pgid: 0,
+			}
 
 		out, err := cmd.StdoutPipe()
 		if err != nil {
@@ -777,9 +782,11 @@ func (nav *nav) preview(path string, win *win) {
 			out.Close()
 			return
 		}
+		last_preview_child_pid = cmd.Process.Pid
 
 		defer func() {
-			if err := cmd.Wait(); err != nil {
+			err := cmd.Wait()
+			if err != nil {
 				if e, ok := err.(*exec.ExitError); ok {
 					if e.ExitCode() != 0 {
 						reg.volatile = true
@@ -788,7 +795,11 @@ func (nav *nav) preview(path string, win *win) {
 				} else {
 					log.Printf("loading file: %s", err)
 				}
+			} else {
+				reg.volatile = false
+				nav.volatilePreview = false
 			}
+			last_preview_child_pid = 0
 		}()
 		defer out.Close()
 		reader = bufio.NewReader(out)
