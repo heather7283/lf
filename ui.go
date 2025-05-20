@@ -1034,6 +1034,7 @@ func (ui *ui) draw(nav *nav) {
 	context := dirContext{selections: nav.selections, saves: nav.saves, tags: nav.tags}
 
 	ui.screen.Clear()
+	ui.sxScreen.sixel = nil
 
 	ui.drawPromptLine(nav)
 
@@ -1071,15 +1072,14 @@ func (ui *ui) draw(nav *nav) {
 		ui.screen.ShowCursor(ui.msgWin.x+runeSliceWidth(prefix)+runeSliceWidth(left), ui.msgWin.y)
 	}
 
-	curr, err := nav.currFile()
-	if err == nil {
-		preview := ui.wins[len(ui.wins)-1]
-		ui.sxScreen.clearSixel(preview, ui.screen, curr.path)
-		if gOpts.preview {
+	if gOpts.preview {
+		curr, err := nav.currFile()
+		if err == nil {
+			preview := ui.wins[len(ui.wins)-1]
+
 			if curr.Mode().IsRegular() || (curr.IsDir() && gOpts.dirpreviews) {
 				preview.printReg(ui.screen, ui.regPrev, nav.previewLoading, &ui.sxScreen)
 			} else if curr.IsDir() {
-				ui.sxScreen.lastFile = ""
 				preview.printDir(ui, ui.dirPrev, &context,
 					&dirStyle{colors: ui.styles, icons: ui.icons, role: Preview})
 			}
@@ -1111,6 +1111,10 @@ func (ui *ui) draw(nav *nav) {
 	}
 
 	ui.screen.Show()
+	if ui.menu == "" && ui.cmdPrefix == "" && ui.sxScreen.sixel != nil {
+		ui.sxScreen.lastFile = ui.regPrev.path
+		ui.sxScreen.showSixels()
+	}
 }
 
 func findBinds(keys map[string]expr, prefix string) (binds map[string]expr, ok bool) {
@@ -1532,7 +1536,6 @@ func (ui *ui) readExpr() {
 }
 
 func (ui *ui) suspend() error {
-	ui.sxScreen.forceClear = true
 	return ui.screen.Suspend()
 }
 
