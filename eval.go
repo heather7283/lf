@@ -157,7 +157,7 @@ func (e *setExpr) eval(app *app, _ []string) {
 		}
 	// DEPRECATED: remove after r42 is released
 	case "roundbox", "noroundbox", "roundbox!":
-		app.ui.echoerr("option 'roundbox' is deprecated, use 'borderstyle' instead")
+		//app.ui.echoerr("option 'roundbox' is deprecated, use 'borderstyle' instead")
 	case "showbinds", "noshowbinds", "showbinds!":
 		err = applyBoolOpt(&gOpts.showbinds, e)
 	case "smartcase", "nosmartcase", "smartcase!":
@@ -372,7 +372,7 @@ func (e *setExpr) eval(app *app, _ []string) {
 		gOpts.rulerfile = replaceTilde(e.val)
 		app.ui.ruler, app.ui.rulerErr = parseRuler(gOpts.rulerfile)
 	case "rulerfmt":
-		app.ui.echoerr("option 'rulerfmt' is deprecated and will be replaced by the 'rulerfile' option")
+		//app.ui.echoerr("option 'rulerfmt' is deprecated and will be replaced by the 'rulerfile' option")
 		gOpts.rulerfmt = e.val
 	case "scrolloff":
 		n, err := strconv.Atoi(e.val)
@@ -430,7 +430,7 @@ func (e *setExpr) eval(app *app, _ []string) {
 		gOpts.sortby = method
 		app.nav.sort()
 	case "statfmt":
-		app.ui.echoerr("option 'statfmt' is deprecated and will be replaced by the 'rulerfile' option")
+		//app.ui.echoerr("option 'statfmt' is deprecated and will be replaced by the 'rulerfile' option")
 		gOpts.statfmt = e.val
 	case "tabstop":
 		n, err := strconv.Atoi(e.val)
